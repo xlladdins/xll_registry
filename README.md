@@ -13,7 +13,8 @@ Hives have a heirarchical structure similar to a file system. The top level hive
 that are analogous to directories. 
 Keys have a case insensitve string name and associated security
 attributes for reading (`r`) and writing (`w`) _values_ the key contains, and searching into _subkeys_ (`x`).
-The type `HKEY` represents the 'directory'.
+Keys also keep track of the last time they were modified and _volatile_ keys are deleted when the process that created the key terminates.
+The type `HKEY` represents the 'directory' containing its subkeys and values. 
 
 Keys contain _values_ that are like files with restricted content type. 
 Values have case insensitive strings names and their associated content type.
@@ -29,21 +30,34 @@ The member function `Reg::Key::disposition()` returns
 `REG_OPENED_EXISTING_KEY` if an existing key was opened or `REG_CREATED_NEW_KEY` 
 if a new key was created.
 
-### `Reg::Key::Info`
+Keys cannot be copied or assigned to, only moved or move assigned. They have semantics
+similar to `std::unique_ptr`.
 
-The function [`RegQueryInfoKey`](https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regqueryinfokeyw)
-retrieves information about the key: how many subkeys it has, the maximum length of the subkey names,
-how many values the key has, the maximum length of the value names, the maximum size of the
-all values, and the last time the key was modified.
-The corresponding add-in function is [`REG.KEY.INFO`](???).
+This class defines `operator HKEY()` to return the underlying key so it is possible to
+use it in native Windows registry functions. For example, there is no `DeleteKey`
+method. One simply calls the Windows API function `RegDeleteKey(key, "subKey")`.
+To get key information call the function 
+[`RegQueryInfoKey`](https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regqueryinfokeyw)
 
-### `Reg::Key::Keys
+Key values can be queried and set using `Reg::Key::QueryValue` and `Reg::Key::SetValue`
+that call `RegQueryValueEx` and `RegSetValueEx` respectively. It is more convenient
+to use `Reg::Key::operator[]` which returns a proxy class. The proxy has overloads for `operator T()`
+where `T` is any value type to get values. Registry values can be set using the proxy overload
+for `operator=(const T&)`. Keys can be used as built-in C++ types. 
+The assignment `key["valueName"] = value` results in setting 
+the regitsry value having name `"valueName"` with the contents of `value`.
+
+### `Reg::Key::KeyIterator
 
 The function [`RegEnumKeyEx`](https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regenumkeyexw)
-enumerates the names of the subkeys of a key.
+enumerates the names of the subkeys of a key. The class `Reg::Key` has a `begin()` and and `end()` method
+for use with the STL. For example, the range based for loop
+`for (PCTSTR& name : key) { cout << name << endl; }` prints
+the names of all subkeys of `key`.
+
 The corresponding add-in function [`REG.KEYS`](???) returns a one column array of subkey names.
 
-### `Reg::Key::Values`
+### `Reg::Key::ValueIterator`
 
 The function [`RegEnumValue`](https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regenumvaluew)
 enumerates the names and types of the values contained in a key.
