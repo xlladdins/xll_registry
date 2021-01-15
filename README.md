@@ -47,12 +47,12 @@ for `operator=(const T&)`. Keys can be used as built-in C++ types.
 The assignment `key["valueName"] = value` results in setting 
 the regitsry value having name `"valueName"` with the contents of `value`.
 
-### `Reg::Key::KeyIterator
+### `Reg::Key::KeyIterator`
 
 The function [`RegEnumKeyEx`](https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regenumkeyexw)
-enumerates the names of the subkeys of a key. The class `Reg::Key` has a `begin()` and and `end()` method
+enumerates the names of the subkeys of a key. The member function `Reg::Key::Keys` returns an iterator
 for use with the STL. For example, the range based for loop
-`for (PCTSTR& name : key) { cout << name << endl; }` prints
+`for (PCTSTR& name : key.Keys()) { cout << name << endl; }` prints
 the names of all subkeys of `key`.
 
 The corresponding add-in function [`REG.KEYS`](???) returns a one column array of subkey names.
@@ -60,5 +60,7 @@ The corresponding add-in function [`REG.KEYS`](???) returns a one column array o
 ### `Reg::Key::ValueIterator`
 
 The function [`RegEnumValue`](https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regenumvaluew)
-enumerates the names and types of the values contained in a key.
+enumerates the names and types of the values contained in a key. The member function `Reg::Key::Values` returns an iterator
+for use with the STL.
+
 The corresponding add-in function [`REG.VALUES`](???) returns a one column array of value names.
