@@ -4,6 +4,8 @@
 
 #define CATEGORY "Registry"
 
+static int xll_registry_documentation = xll::Documentation("xll_registry", "Registry functions.");
+
 using namespace xll;
 using namespace Reg;
 
