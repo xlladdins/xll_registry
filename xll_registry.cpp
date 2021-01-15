@@ -247,7 +247,7 @@ AddIn xai_reg_values(
 	.FunctionHelp("Return an range of value names and optionally their values.")
 	.Category(CATEGORY)
 	.HelpTopic("https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regenumvaluew")
-	.Documentation(R"(Enumerate the value names.)")
+	.Documentation(R"(Enumerate the value names and optionally return values.)")
 );
 LPOPER WINAPI xll_reg_values(HANDLEX hkey, BOOL b)
 {
@@ -285,9 +285,10 @@ AddIn xai_reg_value_get(
 		Arg(XLL_CSTRING, "subkey", "is the name of the subkey to get.", ""),
 		Arg(XLL_CSTRING, "name", "is the name of the value to get.", "Path"),
 	})
-	.FunctionHelp("Return key value given its name.")
+	.FunctionHelp("Return key value given subkey and name.")
 	.Category(CATEGORY)
 	.HelpTopic("https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regenumvaluew")
+	.Documentation(R"(Return key value given subkey and name.)")
 );
 LPOPER WINAPI xll_reg_value_get(HANDLEX hkey, xcstr subkey, xcstr name)
 {
@@ -295,6 +296,7 @@ LPOPER WINAPI xll_reg_value_get(HANDLEX hkey, xcstr subkey, xcstr name)
 	static OPER value;
 
 	try {
+		// should allow for HKEY_XXX if hkey is not a handle!!!
 		handle<Reg::Key> key(hkey);
 		ensure(key);
 		value = GetValue(*key.ptr(), subkey, name);
