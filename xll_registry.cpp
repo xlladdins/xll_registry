@@ -122,16 +122,19 @@ AddIn xai_reg_key(
 		Arg(XLL_LONG, "hive", "is the registry hive from =HIVE_xxx().", "=HIVE_HKCU()"),
 		Arg(XLL_CSTRING, "subkey", "is the registry subkey to open or create.", "Volatile Environment"),
 		Arg(XLL_LONG, "sam", "is the access rights mask from =KEY_xxx() values.", "=KEY_READ()"),
+		Arg(XLL_BOOL, "_open", "is an optional boolean argument indicating the key should be opened, not created. The default is FALSE.", "FALSE")
 	})
 	.Uncalced()
 	.FunctionHelp("Return a HKEY registry handle.")
 	.Category(CATEGORY)
 	.HelpTopic("https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regcreatekeyexw")
 	.Documentation(R"xyzyx(
-The function <code>REG.KEY</code> opens an existing key or creates a new subkey in a hive.
+The function <code>\REG.KEY</code> opens an existing key or creates a new subkey in a hive.
+Use <code>_open = TRUE</code> or <a href="REG.KEY.OPEN.html"><code>\REG.KEY.OPEN</code></a> 
+if you do not want to create a new key.
 )xyzyx")
 );
-HANDLEX WINAPI xll_reg_key(LONG hkey, xcstr subkey, LONG sam)
+HANDLEX WINAPI xll_reg_key(LONG hkey, xcstr subkey, LONG sam, BOOL open)
 {
 #pragma XLLEXPORT
 	HANDLEX h = INVALID_HANDLEX;
@@ -140,7 +143,7 @@ HANDLEX WINAPI xll_reg_key(LONG hkey, xcstr subkey, LONG sam)
 		if (sam == 0) {
 			sam = KEY_READ | KEY_WOW64_64KEY;
 		}
-		handle<Reg::Key> h_(new Reg::Key(LONG_HKEY(hkey), subkey, sam));
+		handle<Reg::Key> h_(new Reg::Key(LONG_HKEY(hkey), subkey, sam, open));
 		ensure(h_);
 		h = h_.get();
 	}
@@ -151,18 +154,57 @@ HANDLEX WINAPI xll_reg_key(LONG hkey, xcstr subkey, LONG sam)
 	return h;
 }
 
-// \REG.KEY.OPEN - will not create new key
+AddIn xai_reg_key_open(
+	Function(XLL_HANDLE, "xll_reg_key_open", "\\REG.KEY.OPEN")
+	.Args({
+		Arg(XLL_LONG, "hive", "is the registry hive from =HIVE_xxx().", "=HIVE_HKCU()"),
+		Arg(XLL_CSTRING, "subkey", "is the registry subkey to open or create.", "Volatile Environment"),
+		Arg(XLL_LONG, "sam", "is the access rights mask from =KEY_xxx() values.", "=KEY_READ()"),
+		})
+	.Uncalced()
+	.FunctionHelp("Return a HKEY registry handle to and existing entry.")
+	.Category(CATEGORY)
+	.HelpTopic("https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regopenkeyexw")
+	.Documentation(R"xyzyx(
+The function <code>\REG.KEY.OPEN</code> opens an existing key in a hive.
+The call <a href="REG.KEY.html"><code>\REG.KEY(hive, subkey, sam, TRUE)</code></a> produces an identical result.
+)xyzyx")
+);
+HANDLEX WINAPI xll_reg_key_open(LONG hkey, xcstr subkey, LONG sam)
+{
+#pragma XLLEXPORT
+	HANDLEX h = INVALID_HANDLEX;
+
+	try {
+		if (sam == 0) {
+			sam = KEY_READ | KEY_WOW64_64KEY;
+		}
+		handle<Reg::Key> h_(new Reg::Key(LONG_HKEY(hkey), subkey, sam, true));
+		ensure(h_);
+		h = h_.get();
+	}
+	catch (const std::exception& ex) {
+		XLL_ERROR(ex.what());
+	}
+
+	return h;
+}
 
 AddIn xai_reg_key_info(
 	Function(XLL_LPOPER, "xll_reg_key_info", "REG.KEY.INFO")
 	.Args({
 		Arg(XLL_HANDLE, "hkey", "is a handle to a key returned by =REG_KEY().", "=HIVE_HKCU()"),
+		Arg(XLL_BOOL, "_describe", "is a boolean indicating the first column should contain descriptions. Default is FALSE.")
 	})
-	.FunctionHelp("Return a two column array of information about the registry key.")
+	.FunctionHelp("Return a range of information about the registry key.")
 	.Category(CATEGORY)
 	.HelpTopic("https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regqueryinfokeyw")
 	.Documentation(R"xyzyx(
-Return a two column array of key information. The first column describes the data returned.
+Return a range of key information. The rows are the number of subkeys, the maximum subkey name length,
+the number of values, the maximum value name length, the maximum value length, and
+the last time the key was modified. 
+The first column describes the data returned if <code>_describe</code> is <code>TRUE</code>.
+By default it is <code>FALSE</code>.
 )xyzyx")
 );
 LPOPER WINAPI xll_reg_key_info(HANDLEX hkey)
@@ -214,10 +256,10 @@ AddIn xai_reg_keys(
 	.Args({
 		Arg(XLL_HANDLE, "hkey", "is a handle to a key returned by =REG_KEY().", "=HIVE_HKCU()"),
 	})
-	.FunctionHelp("Return a one column array of subkey names.")
+	.FunctionHelp("Return a one column range of subkey names.")
 	.Category(CATEGORY)
 	.HelpTopic("https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regenumkeyexw")
-	.Documentation(R"(Enumerate the key names.)")
+	.Documentation(R"(Enumerate the key names in a one column range.)")
 );
 LPOPER WINAPI xll_reg_keys(HANDLEX hkey)
 {
@@ -246,7 +288,7 @@ AddIn xai_reg_values(
 		Arg(XLL_HANDLE, "hkey", "is a handle to a key returned by =REG_KEY().", "=HIVE_HKCU()"),
 		Arg(XLL_BOOL, "_values", "is a boolean indicating if values are to be returned in the second column. Default is FALSE.")
 	})
-	.FunctionHelp("Return an range of value names and optionally their values.")
+	.FunctionHelp("Return a range of value names and optionally their values.")
 	.Category(CATEGORY)
 	.HelpTopic("https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regenumvaluew")
 	.Documentation(R"(Enumerate the value names and optionally return values.)")
@@ -287,10 +329,12 @@ AddIn xai_reg_value_get(
 		Arg(XLL_CSTRING, "subkey", "is the name of the subkey to get.", ""),
 		Arg(XLL_CSTRING, "name", "is the name of the value to get.", "Path"),
 	})
-	.FunctionHelp("Return key value given subkey and name.")
+	.FunctionHelp("Return value given subkey and name.")
 	.Category(CATEGORY)
-	.HelpTopic("https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regenumvaluew")
-	.Documentation(R"(Return key value given subkey and name.)")
+	.HelpTopic("https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-reggetvaluew")
+	.Documentation(R"(Return the value given its subkey and name by calling 
+<a href=\"https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-reggetvaluew\"><code>RegGetValue</code></a>.
+)")
 );
 LPOPER WINAPI xll_reg_value_get(HANDLEX hkey, xcstr subkey, xcstr name)
 {
