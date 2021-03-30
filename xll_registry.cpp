@@ -224,7 +224,7 @@ AddIn xai_reg_key(
 	.Arguments({
 		Arg(XLL_HANDLEX, "key", "is a handle to a registry key.", "=\\REG.KEY.HKCU()"),
 		Arg(XLL_CSTRING, "subkey", "is the registry subkey to open or create.", "\"Console\""),
-		Arg(XLL_LONG, "sam", "is the security access mask from =KEY_xxx() values.", "=KEY_READ()"),
+		Arg(XLL_LONG, "sam", "is the security access mask from =KEY_xxx() values.", "KEY_READ()"),
 		Arg(XLL_BOOL, "_open", "is an optional boolean argument indicating an existing key should be opened, not created. The default is FALSE.", "TRUE")
 	})
 	.Uncalced()
@@ -261,9 +261,9 @@ HANDLEX WINAPI xll_reg_key(HANDLEX hkey, xcstr subkey, LONG sam, BOOL open)
 AddIn xai_reg_key_open(
 	Function(XLL_HANDLEX, "xll_reg_key_open", "\\REG.KEY.OPEN")
 	.Arguments({
-		Arg(XLL_HANDLEX, "key", "is a handle to a registry key.", "=\\REG.KEY.HKCU()"),
+		Arg(XLL_HANDLEX, "key", "is a handle to a registry key.", "\\REG.KEY.HKCU()"),
 		Arg(XLL_CSTRING, "subkey", "is the registry subkey to open or create.", "\"Console\""),
-		Arg(XLL_LONG, "sam", "is the access rights mask from =KEY_xxx() values.", "=KEY_READ()"),
+		Arg(XLL_LONG, "sam", "is the access rights mask from =KEY_xxx() values.", "KEY_READ()"),
 	})
 	.Uncalced()
 	.FunctionHelp("Return a HKEY registry handle to an existing entry.")
@@ -300,7 +300,7 @@ HANDLEX WINAPI xll_reg_key_open(HANDLEX hkey, xcstr subkey, LONG sam)
 AddIn xai_reg_key_info(
 	Function(XLL_LPOPER, "xll_reg_key_info", "REG.KEY.INFO")
 	.Arguments({
-		Arg(XLL_HANDLE, "key", "is a handle to a registry key.", "=\\REG.KEY.HKCU()"),
+		Arg(XLL_HANDLE, "key", "is a handle to a registry key.", "\\REG.KEY.HKCU()"),
 	})
 	.FunctionHelp("Return a information about the registry key.")
 	.Category(CATEGORY)
@@ -371,12 +371,12 @@ LPOPER WINAPI xll_reg_key_info(HANDLEX hkey)
 AddIn xai_reg_keys(
 	Function(XLL_LPOPER, "xll_reg_keys", "REG.KEYS")
 	.Arguments({
-		Arg(XLL_HANDLE, "hkey", "is a handle to a registry key.", "=\\REG.KEY.HKCU()"),
+		Arg(XLL_HANDLE, "hkey", "is a handle to a registry key.", "\\REG.KEY.HKCU()"),
 	})
 	.FunctionHelp("Return subkey names.")
 	.Category(CATEGORY)
 	.HelpTopic("https://docs.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regenumkeyexw")
-	.Documentation(R"(Return key names as a one row range.)")
+	.Documentation(R"(Return key names as a one column range.)")
 );
 LPOPER WINAPI xll_reg_keys(HANDLEX hkey)
 {
@@ -391,7 +391,7 @@ LPOPER WINAPI xll_reg_keys(HANDLEX hkey)
 		for (const auto& k : h_.ptr()->Keys()) {
 			keys.push_back(OPER(k));
 		}
-		keys.resize(1, keys.size());
+		keys.resize(keys.size(), 1);
 	}
 	catch (const std::exception& ex) {
 		XLL_ERROR(ex.what());
@@ -403,7 +403,7 @@ LPOPER WINAPI xll_reg_keys(HANDLEX hkey)
 AddIn xai_reg_values(
 	Function(XLL_LPOPER, "xll_reg_values", "REG.VALUES")
 	.Arguments({
-		Arg(XLL_HANDLE, "hkey", "is a handle to a registry key.", "=\\REG.KEY.HKCU()"),
+		Arg(XLL_HANDLE, "hkey", "is a handle to a registry key.", "\\REG.KEY.HKCU()"),
 	})
 	.FunctionHelp("Return a two column range of value names and their values.")
 	.Category(CATEGORY)
@@ -436,7 +436,7 @@ LPOPER WINAPI xll_reg_values(HANDLEX hkey)
 AddIn xai_reg_value_query(
 	Function(XLL_LPOPER, "xll_reg_value_query", "REG.VALUE.QUERY")
 	.Arguments({
-		Arg(XLL_HANDLE, "hkey", "is a handle to a registy key.", "=\\REG.KEY.HKCU(\"Console\")"),
+		Arg(XLL_HANDLE, "hkey", "is a handle to a registy key.", "\\REG.KEY.HKCU(\"Console\")"),
 		Arg(XLL_CSTRING, "name", "is the name of the value to set.", "\"FaceName\""),
 	})
 	.FunctionHelp("Return value of registry key given its name.")
