@@ -75,18 +75,18 @@ inline Reg::Value SetValue(PCTSTR name, const OPER& o)
 	Reg::Value v;
 
 	switch (type(o)) {
+		/* sizeof(DWORD) = 32
 	case xltypeNum:
 		v = Reg::Value(name, (DWORD)o.val.num);
 
 		break;
+		*/
 	case xltypeInt:
-		v.type = REG_DWORD;
-		v = (DWORD)o.val.w;
+		v = Reg::Value(name, (DWORD)o.val.w);
 		
 		break;
 	case xltypeBool:
-		v.type = REG_DWORD;
-		v = (DWORD)o.val.xbool;
+		v = Reg::Value(name, (DWORD)o.val.xbool);
 		
 		break;
 	case xltypeStr:
@@ -319,7 +319,8 @@ LPOPER WINAPI xll_reg_key_info(HANDLEX hkey)
 
 	info = ErrNA;
 	try {
-		if (hkey) {
+		if (!hkey) {
+			// return values
 			info = OPER({
 				OPER("subKeys"),
 				OPER("maxSubKeyLen"),
