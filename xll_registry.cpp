@@ -105,7 +105,7 @@ HANDLEX WINAPI xll_reg_key_hive(HKEY hkey, xcstr subkey, LONG sam, BOOL open)
 
 	try {
 		if (sam == 0) {
-			sam = KEY_READ | KEY_WOW64_64KEY;
+			sam = KEY_READ;
 		}
 		handle<Reg::Key> h_(new Reg::Key(hkey, subkey, sam, open));
 		ensure(h_);
@@ -244,7 +244,7 @@ HANDLEX WINAPI xll_reg_key(HANDLEX hkey, xcstr subkey, LONG sam, BOOL open)
 
 	try {
 		if (sam == 0) {
-			sam = KEY_READ | KEY_WOW64_64KEY;
+			sam = KEY_READ;
 		}
 		handle<Reg::Key> hkey_(hkey);
 		ensure(hkey_);
