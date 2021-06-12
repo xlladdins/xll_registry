@@ -49,22 +49,30 @@ inline OPER GetValue(const Reg::Value& value)
 
 		break;
 	case REG_SZ:
+	case REG_EXPAND_SZ:
 		o = (xcstr)value;
 
 		break;
 	case REG_MULTI_SZ:
 		{
 			o = OPER{};
-			PCTSTR b = (PCTSTR)value, e = _tcschr(b, TEXT('\0'));
-			while (b and b != e) {
+			PCTSTR b = (PCTSTR)value;
+			while (b) {
+				PCTSTR e = _tcschr(b, TEXT('\0'));
 				o.push_back(OPER(b, static_cast<xchar>(e - b)));
 				b = e + 1;
-				e = _tcschr(b, TEXT('\0'));
 			}
 			o.resize(1, o.size());
 
 		}
 		break;
+	case REG_BINARY:
+		{
+			o = "0x";
+			for (size_t i = 0; i < value.data.size(); ++i) {
+				o &= Excel(xlfDec2hex, OPER(value.data[i]));
+			}
+		}
 	}
 
 	return o;
@@ -309,7 +317,7 @@ AddIn xai_reg_key_info(
 Return a one row range of key information: the number of subkeys, 
 the maximum subkey name length,the number of values, the maximum value name length, 
 the maximum value length, and the last time the key was modified as UTC system time. 
-If key is <code>0</code> return descriptive names of the information.
+If <code>key</code> is missing or 0 return descriptive names of the information.
 )xyzyx")
 );
 LPOPER WINAPI xll_reg_key_info(HANDLEX hkey)
