@@ -499,7 +499,7 @@ HANDLEX WINAPI xll_reg_value_set(HANDLEX hkey, xcstr name, LPOPER pvalue)
 		handle<Reg::Key> key(hkey);
 		ensure(key);
 		Reg::Value value = SetValue(name, *pvalue);
-		ensure(value || !"unrecognized registry value type");
+		ensure(value || !"REG.VALUE.SET: unrecognized registry value type");
 		value.Set(*key);
 	}
 	catch (const std::exception& ex) {
